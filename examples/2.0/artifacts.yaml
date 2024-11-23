@@ -1,0 +1,63 @@
+tosca_definitions_version: tosca_2_0
+
+# You can write your own JavaScript scriptlet or chain a processor to extract artifact
+# files, upload them, execute them, etc.
+#
+# For an example, see: examples/javascript/artifacts.yaml
+
+metadata:
+
+  template_name: Artifacts Example
+  template_author: Puccini
+
+repositories:
+
+  rocky-linux:
+    url: https://dl.rockylinux.org/pub/rocky
+
+artifact_types:
+
+  QCOW:
+    properties:
+      os:
+        type: string
+      version:
+        type: string
+      install:
+        type: boolean
+        default: false
+    mime_type: application/x-qcow
+    file_ext: [ qcow, qcow2 ]
+
+node_types:
+
+  Orchestrator:
+    # When you attach an artifact to a node type it is *not* automatically attached to node templates
+    # It's just a way to provide default values
+    artifacts:
+      image:
+        type: QCOW
+        artifact_version: '2.1-beta1'
+        # You don't have to use a repository like we do here
+        # Without a repository, path is relative to this file's location, even if it's within a CSAR
+        repository: rocky-linux
+        # The extension must match our definition at the artifact type
+        file: 10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2
+        checksum_algorithm: SHA256
+        checksum: 20e771c654724e002c32fb92a05fdfdd7ac878c192f50e2fc21f53e8f098b8f9
+        properties:
+          os: Rocky Linux
+          version: 'v10.0'
+
+service_template:
+
+  node_templates:
+
+    orchestrator:
+      type: Orchestrator
+      artifacts:
+        # Note that you can attach artifacts here even if they are not defined at the node type
+        # (But if they are, you must use the same artifact type or a derived type)
+        image:
+          properties:
+            install: true

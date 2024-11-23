@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+cd "$ROOT"
+
+# sudo dnf install clang mold
+
+
+if [ "$1" == -r ]; then
+	m 'building plugins (release)...' "$CYAN"
+	cargo build --package=puccini-plugin-tosca-2_0-functions --target=wasm32-wasip2 --release
+
+	m 'building binaries (release)...' "$CYAN"
+	cargo install --path="$ROOT/cli"
+else
+	m 'building plugins (dev nightly)...' "$CYAN"
+	RUSTFLAGS='-Z threads=8' \
+	cargo +nightly build --package=puccini-plugin-tosca-2_0-functions --target=wasm32-wasip2
+
+	m 'building binaries (dev nightly)...' "$CYAN"
+	RUSTFLAGS='-Z threads=8 --codegen linker=clang --codegen link-arg=--ld-path=wild' \
+	cargo +nightly install --path="$ROOT/cli" --debug --features=floria/wasm_debug
+fi

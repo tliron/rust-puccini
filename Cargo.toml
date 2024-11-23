@@ -1,0 +1,16 @@
+[workspace]
+resolver = "3"
+members = [
+    "cli",
+    "csar",
+    "tosca",
+    "tosca-2.0-functions",
+]
+
+[patch.crates-io]
+puccini-tosca = { path = "tosca" }
+
+[profile.release]
+# Especially important for wasm!
+strip = "debuginfo"
+lto = "thin"        # true is *very* slow to build!
