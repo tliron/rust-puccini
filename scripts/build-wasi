@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+cd "$ROOT"
+
+if [ "$TARGET" == release ]; then
+	m 'building binaries (WASI release)...' "$CYAN"
+	cargo build --bins --target=wasm32-wasip2 --no-default-features --features=file,http --release
+else
+	m 'building binaries (WASI dev)...' "$CYAN"
+	cargo build --bins --target=wasm32-wasip2 --no-default-features --features=file,http
+fi
+
+m 'to run' "$GREEN"
+m 'wasmtime --dir . target/wasm32-wasip2/debug/puccini-tosca.wasm'

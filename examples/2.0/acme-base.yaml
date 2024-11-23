@@ -1,0 +1,46 @@
+tosca_definitions_version: tosca_2_0
+
+profile: acme
+
+data_types:
+
+  Name:
+    properties:
+      main:
+        type: String
+      alias:
+        type: String
+        required: false
+
+capability_types:
+
+  Host:
+    #derived_from: Host
+    metadata:
+      hello: world
+    properties:
+      address:
+        type: string
+        default: localhost
+        metadata:
+          external: true
+
+relationship_types:
+
+  DbConnection:
+    properties:
+      table-name:
+        type: string
+        default: main
+
+node_types:
+
+  Machine:
+    version: 1.0.1
+    properties:
+      name:
+        type: Name
+        required: false
+        default:
+          main: my machine
+          alias: mchn

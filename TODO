@@ -1,0 +1,46 @@
+
+How TOSCA Compilation Works
+===========================
+
+1. Use Compris to resolve the source into TOSCA entity structs
+   These never change
+2. Process Imports (with caching)
+3. Return Vec<File>
+4. Create the Catalog:
+  1. Iterate Types from Files into a namespace and hierarchy
+     During this phase we check for cyclical hierarchy errors
+  3. Derive Types from parents
+     During this phase we check for derivation errors
+  3. Iterate Templates from ServiceTemplate into a namespace and connect to their Type
+  4. Entype Templates (apply their Type)
+     During this phase we check for refinement errors
+     E.g. undeclared and required
+5. Iterate all derived Types and entyped Templates
+   ServiceTemplate -> floria::NodeTemplate
+     NodeTemplate -> floria::NodeTemplate
+      CapabilityDefinition -> floria::NodeTemplate
+      RequirementDefinition -> floria::RelationshipTemplate
+
+Language Bindings
+=================
+
+https://rust-diplomat.github.io/book/
+C, C++, JS, Dart, Kotlin
+
+https://mozilla.github.io/uniffi-rs/latest/
+Kotlin, Swift, Python
+
+https://github.com/PyO3/maturin
+Package for Python
+
+https://duchess-rs.github.io/duchess/
+Java
+
+https://cxx.rs/
+C++
+
+
+TOSCA errata
+============
+
+$and, $or, etc. functions should be able to have a single argument

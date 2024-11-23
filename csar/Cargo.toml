@@ -1,0 +1,33 @@
+[package]
+edition = "2024"
+
+name = "puccini-csar"
+description = "TOSCA CSAR parser and packager"
+version = "0.0.1"
+rust-version = "1.90"
+
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tliron/puccini"
+documentation = "https://docs.rs/puccini-csar"
+authors = ["Tal Liron"]
+
+readme = "../../README.md"
+
+categories = [] # https://crates.io/category_slugs
+keywords = [
+    "cloud",
+    "orchestration",
+    "wasm",
+    "tosca",
+    "floria",
+    "puccini",
+    "khutulun",
+]
+
+[dependencies]
+compris = "=0.0.7"
+
+# https://stackoverflow.com/a/61417700
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

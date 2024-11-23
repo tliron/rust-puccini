@@ -1,0 +1,55 @@
+tosca_definitions_version: tosca_2_0
+
+metadata:
+
+  template_name: Attributes Example
+  template_author: Puccini
+
+data_types:
+
+  DayOfWeek:
+    derived_from: string
+    validation:
+      { $valid_values: [ $value, [ su, mo, tu, we, th, fr, sa ] ] }
+
+  Size:
+    derived_from: scalar
+    data_type: integer
+    validation: { $greater_or_equal: [ $value, 0 ] }
+    units:
+      B: 1
+    prefixes:
+      K: 1024
+      Ki: 1024
+      M: 1000000
+      Mi: 1048576
+      G: 1000000000
+      Gi: 1073741824
+
+node_types:
+
+  Backup:
+    # Unlike "properties", you can't mark an attribute as required or not
+    # Attributes are *always* added to the node template, even if they have not been assigned
+    # If they don't have a "default" value, they will get an automatic, sensible default
+    # (E.g., a string will get an empty string)
+    # But this might not always validate, which would result in an error
+    # So in some cases you might *have to* explicitly assign a default
+    attributes:
+      days:
+        type: list
+        entry_schema: DayOfWeek
+      max-size:
+        description: Max size
+        type: Size
+
+service_template:
+
+  node_templates:
+
+    backup:
+      type: Backup
+      attributes:
+        # You can assign initial values to attributes
+        # Though it's expected that they may change
+        max-size: 10 gib

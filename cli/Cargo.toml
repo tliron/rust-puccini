@@ -1,0 +1,51 @@
+[package]
+edition = "2024"
+
+name = "puccini-cli"
+description = "Puccini TOSCA and CSAR CLI utilities"
+version = "0.0.2"
+rust-version = "1.90"
+
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tliron/puccini"
+documentation = "https://docs.rs/puccini"
+authors = ["Tal Liron"]
+
+readme = "../../README.md"
+
+categories = [] # https://crates.io/category_slugs
+keywords = [
+    "cloud",
+    "orchestration",
+    "wasm",
+    "tosca",
+    "floria",
+    "puccini",
+    "khutulun",
+]
+
+[dependencies]
+anstream = "0.6.21"
+compris = "=0.0.7"
+clap = { version = "4.5.48", features = ["derive"] }
+floria = "=0.0.1"
+floria-plugin-sdk = "=0.0.1"                                     # not used, here to remove warning for patch
+kutil = { version = "=0.0.1", features = ["cli", "std", "clap", "derive"] }
+puccini-tosca = { version = "=0.0.1", default-features = false, features = ["tosca-2_0"] }
+read-url = { version = "=0.0.6", features = ["blocking"] }
+thiserror = "2.0.17"
+tracing = "0.1.41"
+
+[features]
+default = ["plugins", "filesystem"]
+#default = ["filesystem"]
+plugins = ["floria/plugins", "puccini-tosca/plugins"]
+filesystem = []                                       # maybe wasi can't support files?
+
+[[bin]]
+name = "puccini-tosca"
+path = "src/puccini-tosca/main.rs"
+
+[[bin]]
+name = "puccini-csar"
+path = "src/puccini-csar/main.rs"

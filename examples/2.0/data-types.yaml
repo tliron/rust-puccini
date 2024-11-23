@@ -1,0 +1,278 @@
+tosca_definitions_version: tosca_2_0
+
+# To apply the constraints use "--coerce":
+#   puccini-tosca compile --coerce examples/2.0/data-types.yaml
+
+metadata:
+
+  template_name: Data Types Example
+  template_author: Puccini
+
+node_types:
+
+  DataNode:
+    properties:
+
+      # Primitive types
+      string:
+        type: string
+      integer:
+        type: integer
+      float:
+        type: float
+        default: -0.1
+      boolean:
+        type: boolean
+        required: false
+      nil:
+        type: nil
+
+      # Special types
+      timestamp:
+        type: timestamp
+      version:
+        type: version
+
+      # List and map types *must* specify "entry_schema" for entry types
+      integer-list:
+        type: list
+        entry_schema: integer
+      string-map:
+        type: map
+        entry_schema: string
+
+      # Struct types are defined in "data_types"
+      struct:
+        type: Struct
+
+      # As are scalar types
+      size:
+        type: Size
+
+      # The "entry_schema" can be a complex type
+      struct-list:
+        type: list
+        entry_schema: Struct
+
+      # Properties can add validation
+      # Validation is a boolean expression, which likely makes use of $value
+      validated-string:
+        type: string
+        validation:
+          $and:
+          - { $greater_or_equal: [ $length: [ $value ], 2 ] }
+          - { $less_or_equal: [ $length: [ $value ], 5 ] }
+
+      # This property is also validated, but not here: see the data type
+      # (You can also add *additional* constraints here if needed; it's logical "and")
+      lowercase:
+        type: LowerCase
+
+      # We can constrain map keys via the "key_schema"
+      # The key_schema must be string (the default) or a derivative
+      lowercase-string-map:
+        type: map
+        key_schema: LowerCase
+        entry_schema: string
+
+      # Using a longer notation you can also add validation to the entry schema
+      validated-float-list:
+        type: list
+        entry_schema:
+          type: float
+          validation:
+            $and:
+            - { $greater_or_equal: [ $length: [ $value ], -1.0 ] }
+            - { $less_or_equal: [ $length: [ $value ], 1.0 ] }
+
+      # Validation is type-aware, such that comparisons of special type values
+      # will be done semantically
+      validated-size:
+        type: Size
+        validation:
+          $and:
+          - { $greater_or_equal: [ $value, 1 B ] }
+          - { $less_or_equal: [ $value, 1 GB ] }
+
+      # Another example showing semantic "version" comparison
+      validated-version:
+        type: version
+        validation:
+          $and:
+          - { $greater_or_equal: [ $value, 1.2.3-beta3 ] }
+          - { $less_or_equal: [ $value, 1.2.3-beta5 ] }
+
+      # Custom map
+      size-map:
+        type: SizeMap
+
+      # Recursive list
+      recursive:
+        type: RecursiveList
+
+      # In Puccini you can also create your own custom constraints
+      # See: examples/javascript/constraints.yaml
+
+data_types:
+
+  Struct:
+    # ("properties" is poorly named here: these are really "fields" of our struct type,
+    # quite different from "properties" in nodes, capabilities, relationships, etc.)
+    properties:
+      string:
+        type: string
+        # Individual properties can have default values
+        default: Default Value
+      integer:
+        type: integer
+      float:
+        type: float
+        # Properties are required by default
+        required: false
+      # Struct types can be nested
+      nested:
+        type: Nested
+      self:
+        # Types in TOSCA are allowed to be recursive, meaning that they can refer to themselves
+        # Puccini does not validate that your recursion is convergent
+        # However, reality does :)
+        # E.g. if this property were "required: true" then we would need infinitely sized value to
+        # satisfy the schema...
+        type: Struct
+        required: false
+
+  Nested:
+    properties:
+      nested-float:
+        type: float
+        validation: { $greater_or_equal: [ $value, 0.0 ] }
+      nested_string:
+        type: string
+        required: false
+
+  Size:
+    derived_from: scalar
+    data_type: integer
+    units:
+      B: 1
+    prefixes:
+      '': 1
+      K: 1024
+      Ki: 1024
+      M: 1000000
+      Mi: 1048576
+      G: 1000000000
+      Gi: 1073741824
+    validation: { $greater_or_equal: [ $value, 0 B ] }
+
+  # Puccini lets you derive from primitive types; useful for adding constraints
+  # Note that if you derive from a primitive you *cannot* also define properties
+  LowerCase:
+    derived_from: string
+    description: Lowercase string
+    validation: { $matches: [ $value, '[a-z]*' ] }
+
+  SizeMap:
+    derived_from: map
+    # You can only use entry_schema if you derive from map or list
+    # And you can only use key_schema if you derive from map
+    entry_schema: Size
+
+  RecursiveList:
+    derived_from: list
+    entry_schema: RecursiveList
+
+service_template:
+
+  inputs:
+
+    number:
+      type: integer
+      default: 4
+
+  node_templates:
+
+    data:
+      type: DataNode
+      properties:
+
+        string: Hello, Puccini
+        integer: 123
+        float: 12.3
+        boolean: true
+        # The nil type can have only the null value
+        nil: null
+
+        integer-list: [ 1, 2, 3, { $get_input: number } ]
+
+        string-map:
+          Greeting: Hello
+          # Note that values as well map keys could be function calls
+          Message: { $concat: [ Good, ' ', Day ] }
+          { $concat: [ Recip, ient ] }: Puccini
+
+        lowercase-string-map:
+          greeting: Hello
+          { $concat: [ recip, ient ] }: Puccini
+
+        struct:
+          string: Hello, Puccini
+          integer: 123
+          nested:
+            nested-float: 12.3
+          self:
+            string: Hello again, Puccini
+            integer: 456
+            nested:
+              nested-float: 4.56
+
+        struct-list:
+        - integer: 123
+          nested:
+            nested-float: 45.6
+        - integer: 789
+          nested:
+            nested-float: 1.0
+
+        size: 1.23 GB
+
+        # "timestamp" is a string formatted according to RFC 3339:
+        timestamp: '1975-09-15t12:34:56.7+02:00'
+
+        # Note that some YAML environments may support a !!timestamp type:
+        # http://yaml.org/type/timestamp.html
+        # Normally Puccini will not allow it, but it could be enabled via a quirk:
+        # puccini-tosca compile --quirk=data_types.timestamp.permissive
+        # (In this case the YAML parser parses the timestamp, not Puccini's TOSCA parser)
+        #timestamp: !!timestamp 1975-09-15t12:34:56.7+02:00
+
+        # The version structure in TOSCA is very specific and might not fit your needs
+        # This example has all fields: Major.Minor.Fix-qualifierBuild
+        # Note that you need *at least* Major.Minor, and it must be a string (not a float!)
+        version: 1.2.3-beta4
+
+        # Validation: min length = 2 and max length = 5
+        validated-string: ABCDE
+
+        # Validation: lowercase letters only
+        lowercase: helloworld
+
+        # Validation: -1.0 <= x <= 1.0
+        validated-float-list:
+        - -0.999
+        - 0.0
+        - 1.0
+
+        # Validation: 1 B <= x <= 1 GB
+        validated-size: 1 KiB
+
+        # Validation: 1.2.3-beta3 <= x <= 1.2.3-beta5
+        validated-version: 1.2.3-beta4
+
+        # Custom map
+        size-map:
+          first: 100 B
+          second: 1 KB
+
+        # Tricky :)
+        recursive-list: [[], [], []]

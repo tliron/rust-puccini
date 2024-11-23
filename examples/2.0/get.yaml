@@ -1,0 +1,51 @@
+tosca_definitions_version: tosca_2_0
+
+description: What to do with this?
+
+profile: get
+
+imports:
+- url: acme.yaml
+  namespace: acme
+
+service_template:
+
+  description: My service!
+
+  node_templates:
+
+    primary:
+      type: acme:Server
+      description: primary
+      metadata:
+        hello: primary
+      directives: [ hello, world ]
+      properties:
+        cluster: primary
+      capabilities:
+        host:
+          properties:
+            address: primary
+
+    secondary:
+      type: acme:Server
+      description: secondary
+      metadata:
+        hello: secondary
+      properties:
+        cluster: { $get_property: [ primary, 0, cluster ] }
+        rack: { $get_property: [ SELF, RELATIONSHIP, db, 0, TARGET, name, alias ] }
+      capabilities:
+        host:
+          properties:
+            address: { $get_property: [ primary, CAPABILITY, host, address ] }
+
+    db1:
+      type: acme:DB
+
+    db2:
+      type: acme:DB
+      capabilities:
+        host:
+          properties:
+            address: something
