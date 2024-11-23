@@ -1,0 +1,90 @@
+use bytestring::*;
+
+//
+// Named
+//
+
+// /// Named entity.
+// pub struct Named<'own, EntityT> {
+//     /// Name.
+//     pub name: &'own Name,
+
+//     /// Entity.
+//     pub entity: &'own EntityT,
+// }
+
+// impl<'own, EntityT> Named<'own, EntityT> {
+//     /// Constructor.
+//     pub fn new(name: &'own Name, entity: &'own EntityT) -> Self {
+//         Self { name, entity }
+//     }
+// }
+
+// impl<'own, EntityT, FieldEntityT> NamespacedField<'own, FieldEntityT> for Named<'own, EntityT> {
+//     fn field(&self, entity: &'own FieldEntityT) -> NamespacedRef<'own, FieldEntityT> {
+//         NamespacedRef::new(entity, &self.name.namespace)
+//     }
+// }
+
+//
+// Namespace
+//
+
+/// Namespace.
+pub type Namespace = Vec<ByteString>;
+
+//
+// NamespacedRef
+//
+
+// /// Namespaced entity reference.
+// pub struct NamespacedRef<'own, EntityT> {
+//     /// Namespace.
+//     pub namespace: &'own Namespace,
+
+//     /// Entity.
+//     pub entity: &'own EntityT,
+// }
+
+// impl<'own, EntityT> NamespacedRef<'own, EntityT> {
+//     /// Constructor.
+//     pub fn new(entity: &'own EntityT, namespace: &'own Namespace) -> Self {
+//         Self { entity, namespace }
+//     }
+// }
+
+//
+// Namespaced
+//
+
+// /// Namespaced entity.
+// pub struct Namespaced<EntityT> {
+//     /// Namespace.
+//     pub namespace: Namespace,
+
+//     /// Entity.
+//     pub entity: EntityT,
+// }
+
+// impl<EntityT> Namespaced<EntityT> {
+//     /// Constructor.
+//     pub fn new(namespace: Namespace, entity: EntityT) -> Self {
+//         Self { namespace, entity }
+//     }
+// }
+
+//
+// NamespacedField
+//
+
+// /// Namespaced field.
+// pub trait NamespacedField<'own, FieldEntityT> {
+//     /// Field.
+//     fn field(&self, entity: &'own FieldEntityT) -> NamespacedRef<'own, FieldEntityT>;
+// }
+
+// impl<'own, EntityT, FieldEntityT> NamespacedField<'own, FieldEntityT> for NamespacedRef<'own, EntityT> {
+//     fn field(&self, entity: &'own FieldEntityT) -> NamespacedRef<'own, FieldEntityT> {
+//         NamespacedRef::new(entity, self.namespace)
+//     }
+// }
