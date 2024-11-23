@@ -1,0 +1,12 @@
+tosca_definitions_version: tosca_2_0
+
+metadata:
+
+  template_name: Cloud Profile Example
+  template_author: Puccini
+
+profile: database
+
+node_types:
+
+  Database: {}

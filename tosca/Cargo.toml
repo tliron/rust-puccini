@@ -1,0 +1,49 @@
+[package]
+edition = "2024"
+
+name = "puccini-tosca"
+description = "TOSCA parser, validator, and Floria compiler"
+version = "0.0.1"
+rust-version = "1.89"
+
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tliron/rust-puccini"
+documentation = "https://docs.rs/puccini-tosca"
+authors = ["Tal Liron"]
+
+readme = "../../README.md"
+
+categories = [] # https://crates.io/category_slugs
+keywords = [
+    "cloud",
+    "orchestration",
+    "wasm",
+    "tosca",
+    "floria",
+    "puccini",
+    "khutulun",
+]
+
+[dependencies]
+anstream = "0.6.20"
+compris = { version = "=0.0.7", features = ["derive"] }
+duplicate = "2.0.0"
+floria = "=0.0.1"
+kutil = { version = "=0.0.1", features = ["cli", "std", "zerocopy"] }
+read-url = { version = "=0.0.6", default-features = false, features = ["blocking"] }
+smart-default = "0.7.1"
+thiserror = "2.0.16"
+tracing = "0.1.41"
+tynm = "0.2.0"
+uuid = { version = "1.18.1", features = ["v4"] }
+
+[features]
+default = ["plugins", "filesystem", "http"]
+plugins = ["floria/plugins"]
+filesystem = ["read-url/file"]
+http = ["read-url/http"]
+
+# https://stackoverflow.com/a/61417700
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

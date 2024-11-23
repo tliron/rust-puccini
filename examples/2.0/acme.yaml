@@ -1,0 +1,45 @@
+tosca_definitions_version: tosca_2_0
+
+imports:
+
+- url: acme-base.yaml
+  namespace: base
+
+node_types:
+
+  Server:
+    derived_from: base:Machine
+    description: My server type
+    version: 1.0.2
+    metadata:
+      hello1: my server type
+      hello2: hello
+      hello3: { key1: value1, key2: value2 }
+    capabilities:
+      host:
+        type: base:Host
+    requirements:
+    - db:
+        node: DB
+        capability: host
+        relationship:
+          type: base:DbConnection
+          properties:
+            table-name: second
+    properties:
+      cluster:
+        type: string
+        validation: { $less_than: [ { $length: [ $value ] }, 100 ] }
+      rack:
+        type: string
+        required: false
+        default: my rack
+
+  DB:
+    derived_from: base:Machine
+    description: My db type
+    metadata:
+      hello: my db type
+    capabilities:
+      host:
+        type: base:Host

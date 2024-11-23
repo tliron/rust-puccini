@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+cd "$ROOT"
+
+# /Depot/Build/wabt/out/clang/Debug/wasm2wat \
+# target/wasm32-unknown-unknown/release/puccini_functions.wasm
+
+/Depot/Build/wabt/out/clang/Debug/wasm2wat \
+target/wasm32-wasip2/release/puccini_functions.wasm

@@ -1,0 +1,23 @@
+[unstable]
+codegen-backend = true
+
+[build]
+rustflags = ["-Z", "threads=18"]
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+#rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/ld.lld"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold", "-Z", "macro-backtrace"]
+
+[profile.dev]
+codegen-backend = "cranelift"
+opt-level = 0
+
+[profile.dev.package.wasmtime-fiber]
+codegen-backend = "llvm"
+
+[profile.dev.package.wasmtime-wasi]
+codegen-backend = "llvm"
+
+# [profile.dev.package.compris]
+# codegen-backend = "llvm"
