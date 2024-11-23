@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+cd "$ROOT"
+
+#cargo expand --package=puccini-tosca --features=kutil-cli/derive "$@"
+#cargo expand --package=puccini-floria "$@"
+cargo expand --package=puccini-plugins "$@"

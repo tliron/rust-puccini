@@ -1,0 +1,176 @@
+tosca_definitions_version: tosca_2_0
+
+metadata:
+
+  template_name: Interfaces Example
+  template_author: Puccini
+
+node_types:
+
+  # (You can also define interfaces in group and relationship types)
+
+  Server:
+    derived_from: BetterServer
+    #derived_from: tosca:Compute
+    interfaces:
+      Maintenance:
+        type: Maintenance
+
+      # All normative node types (derived from Root) have the "Standard" lifecycle interface
+      Standard:
+        # (You can override the type here, but only if it's a derived type)
+        # You can define operations both at the interface type and at the node type
+        operations:
+          create:
+            # You *must* define inputs in order to assign them at the template
+            inputs:
+              retries:
+                type: integer
+    attributes:
+      progress:
+        type: string
+      last-turned-off:
+        type: timestamp
+    requirements:
+    - dhcp:
+        capability: DHCP
+        relationship: AllocateAddress
+
+  BetterServer:
+    derived_from: Server
+    interfaces:
+      Standard:
+        operations:
+          create:
+            inputs:
+              # Inputs are inherited (both from interface type and node type)
+              retries:
+                # You can override the type, but only if it's a derived type
+                type: Retries
+
+  DHCPServer:
+    derived_from: tosca:Compute
+    capabilities:
+      dhcp:
+        type: DHCP
+
+data_types:
+
+  Retries:
+    derived_from: integer
+    constraints:
+    - greater_or_equal: 0
+
+capability_types:
+
+  DHCP:
+    derived_from: tosca:Endpoint
+    attributes:
+      ip-pool:
+        type: list
+        entry_schema:
+          type: string
+
+interface_types:
+
+  Maintenance:
+    # You can define inputs for the interface as a whole as well as for individual operations
+    inputs:
+      mode:
+        type: string
+        constraints:
+        - valid_values: [ staging, production ]
+    operations:
+      maintenance-on:
+        description: Turn maintenance mode on
+      maintenance-off:
+        description: Turn maintenance mode off
+        inputs:
+          priority:
+            type: float
+        outputs:
+          # Outputs map to *attributes*
+          # The attribute must be declared at the type
+          timestamp: [ SELF, last-turned-off ]
+    notifications:
+      progress:
+        description: Progress on maintenance mode
+        outputs:
+          percentage: [ SELF, progress ]
+
+relationship_types:
+
+  AllocateAddress:
+    derived_from: tosca:ConnectsTo
+    interfaces:
+      Configure:
+        operations:
+          pre_configure_source:
+            inputs:
+              ip-pool:
+                value: { get_attribute: [ TARGET, dhcp, ip-pool ] }
+            outputs:
+              # Inside a relationship, output mappings can target
+              # SOURCE and TARGET entities
+              ip: [ SOURCE, public_address ]
+
+              # We cannot validate the TARGET attributes, because
+              # the target node type is not known until the target node template is
+              # resolved. We at best know the base type only.
+              #
+              # To evaluate the target use "--coerce":
+              #   puccini-tosca compile --coerce interfaces.yaml
+              updated-ip-pool: [ TARGET, dhcp, ip-pool ]
+
+service_template:
+
+  node_templates:
+
+    dhcp-server:
+      type: DHCPServer
+
+    server:
+      type: Server
+      requirements:
+      - dhcp:
+          node: dhcp-server
+          relationship:
+            interfaces:
+              Configure:
+                operations:
+                  pre_configure_source:
+                    implementation: scripts/get_ip.sh
+      interfaces:
+        Standard:
+          operations:
+            # Shortest notation has just the implementation
+            start: scripts/start.sh
+            stop: scripts/start.sh
+
+            # Longer notation with inputs
+            create:
+              implementation: scripts/create.sh
+              inputs:
+                retries: 3
+
+            # Longest notation also allows adding dependencies and other params to the implementation
+            configure:
+              implementation:
+                primary: scripts/configure.sh
+                dependencies:
+                - scripts/utils.sh
+                - scripts/config.yaml
+                timeout: 3
+                operation_host: SELF
+
+        Maintenance:
+          inputs:
+            mode: production
+          operations:
+            maintenance-on: scripts/maintenance-on.sh
+            maintenance-off:
+              implementation: scripts/maintenance-off.sh
+              inputs:
+                priority: .75
+          notifications:
+            progress: scripts/progress.sh

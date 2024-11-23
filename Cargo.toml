@@ -1,0 +1,24 @@
+[workspace]
+resolver = "3"
+members = [
+    "cli",
+    "csar",
+    "tosca",
+    "tosca-2.0-functions",
+]
+
+[patch.crates-io]
+compris = { path = "../rust-compris/library" }
+compris-macros = { path = "../rust-compris/macros" }
+floria = { path = "../rust-floria/library" }
+floria-plugin-sdk = { path = "../rust-floria/sdk" }
+kutil = { path = "../rust-kutil/library" }
+kutil-cli-macros = { path = "../rust-kutil/cli-macros" }
+kutil-std-macros = { path = "../rust-kutil/std-macros" }
+read-url = { path = "../rust-read-url/library" }
+puccini-tosca = { path = "tosca" }
+
+[profile.release]
+# Especially important for wasm!
+strip = "debuginfo"
+lto = "thin"        # true is *very* slow to build!

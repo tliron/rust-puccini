@@ -1,0 +1,82 @@
+tosca_definitions_version: tosca_2_0
+
+metadata:
+
+  template_name: TOSCA 2.0 Example
+  template_author: Puccini
+
+data_types:
+
+  Recursive:
+    properties:
+     field:
+      type: Recursive
+      required: false
+
+  RecursiveMap:
+    derived_from: map
+    entry_schema: RecursiveMap
+
+  Complex:
+    properties:
+      field1:
+        type: string
+        constraints:
+        - min_length: 1
+
+  StringMap:
+    derived_from: map
+    entry_schema:
+      type: string
+      constraints:
+      - min_length: 50
+
+node_types:
+
+  DataNode:
+    properties:
+      bytes:
+        # Base64-encoded data
+        type: bytes
+      complex:
+        type: Complex
+        required: false
+      hints:
+        description: Hint groups
+        type: map
+        entry_schema:
+          description: Hint categories
+          type: map
+          entry_schema:
+            description: Hints
+            type: map
+            entry_schema:
+              type: string
+              constraints:
+              - min_length: 1
+            #type: StringMap
+        required: false
+        constraints:
+        - max_length: 1
+
+service_template:
+
+  node_templates:
+
+    data1:
+      type: DataNode
+      properties:
+        bytes: UHVjY2luaQ==
+
+    data2:
+      type: DataNode
+      properties:
+        bytes: { $get_property: [ data1, bytes ] }
+        complex:
+          field1: my value
+        hints:
+          group1:
+            # "$" needs escaping here so it won't be interpreted as a function call
+            $$infrastructure:
+              env: { $concat: [ prod, uction ] }
+              geo: USA
