@@ -1,0 +1,19 @@
+/// Calls [Resolve::resolve_with_errors](compris::resolve::Resolve::resolve_with_errors)
+/// with a [ErrorAccumulator::new_like](kutil::std::error::ErrorAccumulator::new_like).
+///
+/// Will `?` on errors.
+#[macro_export]
+macro_rules! resolve_with_accumulator {
+    ( $variant:expr, $accumulator:expr $(,)? ) => {{
+        let mut accumulated = Errors::default();
+        let mut resolve_errors = $accumulator.new_like(&mut accumulated);
+
+        let resolved = ::compris::resolve::Resolve::resolve_with_errors($variant, &mut resolve_errors)?;
+
+        for error in accumulated {
+            $accumulator.give(error)?;
+        }
+
+        resolved
+    }};
+}

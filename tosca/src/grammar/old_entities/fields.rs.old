@@ -1,0 +1,216 @@
+// use super::super::data::*;
+
+/// Refine a field.
+pub fn refine_field<FieldT, GetParentFieldT>(
+    field: &Option<FieldT>,
+    get_parent_field: GetParentFieldT,
+) -> Option<FieldT>
+where
+    FieldT: Clone,
+    GetParentFieldT: Fn() -> Option<FieldT>,
+{
+    field.clone().or_else(get_parent_field)
+}
+
+/// Refine a field.
+pub fn refine_field_from<FieldT>(field: &Option<FieldT>, parent_field: &Option<FieldT>) -> Option<FieldT>
+where
+    FieldT: Clone,
+{
+    refine_field(field, || parent_field.clone())
+}
+
+/// Refine a field.
+pub fn refine_field_from_entity<FieldT, ParentEntityT, GetParentFieldT>(
+    field: &Option<FieldT>,
+    parent_entity: Option<ParentEntityT>,
+    get_parent_field: GetParentFieldT,
+) -> Option<FieldT>
+where
+    FieldT: Clone,
+    GetParentFieldT: Fn(ParentEntityT) -> Option<FieldT>,
+{
+    field.clone().or_else(|| parent_entity.and_then(get_parent_field))
+}
+
+//
+// Fields
+//
+
+// /// Fields.
+// pub trait Fields<'own, EntityT> {
+//     /// Get a field reference if possible.
+//     fn get_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<&'own FieldT>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>;
+
+//     /// Get a field reference if possible, within the same namespace.
+//     fn get_namespaced_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<NamespacedRef<'own, FieldT>>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &FieldT;
+
+//     /// Clone the entity's field if it exists, otherwise clone our field.
+//     fn refine_field<FieldT, GetFieldT>(&self, entity: &EntityT, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>;
+
+//     /// Clone the field if it exists, otherwise clone our field.
+//     fn entype_field<FieldT, GetFieldT>(&self, field: &Option<FieldT>, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>;
+// }
+
+// impl<'own, EntityT> Fields<'own, EntityT> for Option<&'own EntityT> {
+//     fn get_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<&'own FieldT>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         self.and_then(|entity| get_field(entity).as_ref())
+//     }
+
+//     fn get_namespaced_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<NamespacedRef<'own, FieldT>>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &FieldT,
+//     {
+//         todo!()
+//     }
+
+//     fn refine_field<FieldT, GetFieldT>(&self, entity: &EntityT, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match get_field(entity) {
+//             Some(field) => Some(field.clone()),
+//             None => self.and_then(|entity| get_field(entity).clone()),
+//         }
+//     }
+
+//     fn entype_field<FieldT, GetFieldT>(&self, field: &Option<FieldT>, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match field {
+//             Some(field) => Some(field.clone()),
+//             None => self.and_then(|entity| get_field(entity).clone()),
+//         }
+//     }
+// }
+
+// impl<'own, EntityT> Fields<'own, EntityT> for NamespacedRef<'own, EntityT> {
+//     fn get_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<&'own FieldT>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         get_field(self.entity).as_ref()
+//     }
+
+//     fn get_namespaced_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<NamespacedRef<'own, FieldT>>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &FieldT,
+//     {
+//         Some(NamespacedRef::new(get_field(self.entity), self.namespace))
+//     }
+
+//     fn refine_field<FieldT, GetFieldT>(&self, entity: &EntityT, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match get_field(entity) {
+//             Some(field) => Some(field.clone()),
+//             None => get_field(self.entity).clone(),
+//         }
+//     }
+
+//     fn entype_field<FieldT, GetFieldT>(&self, field: &Option<FieldT>, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match field {
+//             Some(field) => Some(field.clone()),
+//             None => get_field(self.entity).clone(),
+//         }
+//     }
+// }
+
+// impl<'own, EntityT> Fields<'own, EntityT> for Named<'own, EntityT> {
+//     fn get_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<&'own FieldT>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         get_field(self.entity).as_ref()
+//     }
+
+//     fn get_namespaced_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<NamespacedRef<'own, FieldT>>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &FieldT,
+//     {
+//         Some(NamespacedRef::new(get_field(self.entity), &self.name.namespace))
+//     }
+
+//     fn refine_field<FieldT, GetFieldT>(&self, entity: &EntityT, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match get_field(entity) {
+//             Some(field) => Some(field.clone()),
+//             None => get_field(self.entity).clone(),
+//         }
+//     }
+
+//     fn entype_field<FieldT, GetFieldT>(&self, field: &Option<FieldT>, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match field {
+//             Some(field) => Some(field.clone()),
+//             None => get_field(self.entity).clone(),
+//         }
+//     }
+// }
+
+// impl<'own, EntityT> Fields<'own, EntityT> for Option<Named<'own, EntityT>> {
+//     fn get_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<&'own FieldT>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         self.as_ref().and_then(|named| get_field(named.entity).as_ref())
+//     }
+
+//     fn get_namespaced_field<FieldT, GetFieldT>(&self, get_field: GetFieldT) -> Option<NamespacedRef<'own, FieldT>>
+//     where
+//         GetFieldT: Fn(&EntityT) -> &FieldT,
+//     {
+//         self.as_ref()
+//             .map(|named_entity| NamespacedRef::new(get_field(named_entity.entity), &named_entity.name.namespace))
+//     }
+
+//     fn refine_field<FieldT, GetFieldT>(&self, entity: &EntityT, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match get_field(entity) {
+//             Some(field) => Some(field.clone()),
+//             None => self.as_ref().and_then(|named| get_field(named.entity).clone()),
+//         }
+//     }
+
+//     fn entype_field<FieldT, GetFieldT>(&self, field: &Option<FieldT>, get_field: GetFieldT) -> Option<FieldT>
+//     where
+//         FieldT: Clone,
+//         GetFieldT: Fn(&EntityT) -> &Option<FieldT>,
+//     {
+//         match field {
+//             Some(field) => Some(field.clone()),
+//             None => self.as_ref().and_then(|named| get_field(named.entity).clone()),
+//         }
+//     }
+// }
